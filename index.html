@@ -135,7 +135,7 @@
       <div class="sub">JUST A RATHER VERY INTELLIGENT SYSTEM</div>
     </div>
     <div class="hright">
-      <div class="clock" id="clock">21:02:59</div>
+      <div class="clock" id="clock">21:03:07</div>
       <div class="date" id="date">Sat Jul 18</div>
     </div>
   </header>
@@ -145,11 +145,11 @@
     <section class="panel sysmon">
       <div class="phead">▸ SYS MONITOR</div>
       <div class="bars">
-        <div class="metric"><div class="lab">CPU</div><div class="val" id="vCpu">19%</div><div class="track"><div class="fill" id="fCpu" style="width: 18.7383%; background: rgb(0, 212, 255);"></div></div></div>
-        <div class="metric"><div class="lab">MEM</div><div class="val" id="vMem">46%</div><div class="track"><div class="fill" id="fMem" style="width: 45.9421%; background: rgb(0, 212, 255);"></div></div></div>
-        <div class="metric"><div class="lab">NET</div><div class="val" id="vNet">0KB/s</div><div class="track"><div class="fill" id="fNet" style="width: 3%; background: rgb(0, 212, 255);"></div></div></div>
-        <div class="metric"><div class="lab">GPU</div><div class="val" id="vGpu">7%</div><div class="track"><div class="fill" id="fGpu" style="width: 6.97238%; background: rgb(0, 212, 255);"></div></div></div>
-        <div class="metric"><div class="lab">TMP</div><div class="val" id="vTmp">45°C</div><div class="track"><div class="fill" id="fTmp" style="width: 37.1405%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">CPU</div><div class="val" id="vCpu">23%</div><div class="track"><div class="fill" id="fCpu" style="width: 22.8849%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">MEM</div><div class="val" id="vMem">46%</div><div class="track"><div class="fill" id="fMem" style="width: 46.2799%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">NET</div><div class="val" id="vNet">1.5MB/s</div><div class="track"><div class="fill" id="fNet" style="width: 14.8771%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">GPU</div><div class="val" id="vGpu">9%</div><div class="track"><div class="fill" id="fGpu" style="width: 8.79313%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">TMP</div><div class="val" id="vTmp">46°C</div><div class="track"><div class="fill" id="fTmp" style="width: 40.9316%; background: rgb(0, 212, 255);"></div></div></div>
       </div>
       <div class="sysfoot"><span id="up">UP --:--</span><span id="proc">PROC --</span><span class="os">OS MOBILE</span></div>
       <div class="badges">
@@ -161,7 +161,7 @@
 
     <!-- HUD -->
     <section class="panel hud">
-      <div class="state think" id="state">▷ PROCESSING</div>
+      <div class="state" id="state">○ IDLE</div>
       <canvas id="face" width="275" height="265"></canvas>
       <canvas id="wave" width="1005" height="115"></canvas>
     </section>
@@ -181,7 +181,7 @@
       </section>
       <section class="panel">
         <div class="phead">▸ ACTIVITY LOG</div>
-        <div class="log" id="log"><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">MARK XLIX ONLINE ▸ GEMINI LINKED ✓</div></div><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">Tap 🎤 then speak, or say "Ajay"</div></div></div>
+        <div class="log" id="log"><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">MARK XLIX ONLINE ▸ GEMINI LINKED ✓</div></div><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">Tap 🎤 then speak, or say "Ajay"</div></div><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">DEPLOYED ▸ https://siddu4ever83-hue.github.io/Jarvis/</div></div></div>
       </section>
     </div>
 
@@ -242,8 +242,8 @@
     <p>నీ GitHub token (<b>ghp_...</b>) ఇక్కడ పెట్టు — chat లో కాదు, ఇక్కడే. నేను నీ repo లో దీన్ని పెట్టి HTTPS link ఇస్తాను (అందులో మైక్ పని చేస్తుంది). Token కి <b>repo</b> scope ఉండాలి.</p>
     <input id="deployToken" placeholder="ghp_..." value="">
     <input id="deployRepo" placeholder="owner/repo" value="siddu4ever83-hue/Jarvis" style="margin-top:8px;">
-    <div id="deployStatus" style="font-size:10px;color:var(--text-med);margin:8px 0;white-space:pre-wrap;"></div>
-    <a id="deployLink" target="_blank" style="display:none;color:var(--pri);font-size:11px;word-break:break-all;"></a>
+    <div id="deployStatus" style="font-size:10px;color:var(--text-med);margin:8px 0;white-space:pre-wrap;">✅ DEPLOY DONE! ఇదే స్క్రీన్ (రోబో+globe+space+news) ఆ లింక్ లో ఉంటుంది. ఆ HTTPS link ఓపెన్ చేయి (మైక్ పని చేస్తుంది):</div>
+    <a id="deployLink" target="_blank" style="display: none; color: var(--pri); font-size: 11px; word-break: break-all;" href="https://siddu4ever83-hue.github.io/Jarvis/">https://siddu4ever83-hue.github.io/Jarvis/</a>
     <div class="row" style="margin-top:8px;">
       <button class="kcancel" id="deployCancel">CANCEL</button>
       <button class="ksave" id="deployNow">DEPLOY ▲</button>
