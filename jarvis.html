@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="description" content="JARVIS — your personal mobile voice AI assistant" />
+  <title>JARVIS</title>
+  <style>
+:root {
+  --bg: #05070d;
+  --bg2: #0a1020;
+  --accent: #38bdf8;
+  --accent2: #0ea5e9;
+  --accent-glow: rgba(56, 189, 248, 0.55);
+  --text: #e6f1ff;
+  --muted: #7e93b0;
+  --user: #1e3a5f;
+  --jarvis: #0b2740;
+  --danger: #f87171;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: radial-gradient(circle at 50% 30%, var(--bg2), var(--bg) 70%);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#app {
+  display: flex; flex-direction: column;
+  height: 100dvh; width: 100%;
+  max-width: 720px; margin: 0 auto;
+  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+}
+
+/* Top bar */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 4px 8px;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.logo-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+.brand-name {
+  font-weight: 700; letter-spacing: 3px; font-size: 18px;
+  background: linear-gradient(90deg, #fff, var(--accent));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.top-actions { display: flex; gap: 8px; align-items: center; }
+.chip {
+  background: rgba(56,189,248,0.12); color: var(--accent);
+  border: 1px solid rgba(56,189,248,0.35);
+  padding: 6px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+}
+.chip.on { background: var(--accent); color: #04121f; border-color: var(--accent); }
+.icon-btn {
+  background: transparent; border: none; color: var(--muted);
+  font-size: 20px; padding: 6px;
+}
+
+/* Stage / core */
+.stage {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 18px;
+}
+.core {
+  position: relative; width: 200px; height: 200px;
+  display: grid; place-items: center;
+}
+.core .ring {
+  position: absolute; border-radius: 50%;
+  border: 2px solid rgba(56,189,248,0.25);
+}
+.core .r1 { width: 200px; height: 200px; }
+.core .r2 { width: 150px; height: 150px; border-color: rgba(56,189,248,0.4); }
+.core .r3 { width: 100px; height: 100px; border-color: rgba(56,189,248,0.6); }
+.core .pulse {
+  width: 78px; height: 78px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #9be7ff, var(--accent2) 60%, #0369a1);
+  box-shadow: 0 0 30px var(--accent-glow), inset 0 0 18px rgba(255,255,255,0.4);
+}
+.core-label {
+  position: absolute; font-size: 11px; letter-spacing: 2px;
+  color: var(--text); opacity: 0.85; pointer-events: none;
+  bottom: -26px; white-space: nowrap;
+}
+/* States */
+.core.idle .pulse { animation: breathe 3s ease-in-out infinite; }
+.core.listening .ring { border-color: var(--accent); animation: spin 4s linear infinite; }
+.core.listening .r2 { animation-duration: 3s; animation-direction: reverse; }
+.core.listening .pulse { animation: pulse 1.1s ease-in-out infinite; box-shadow: 0 0 45px var(--accent-glow); }
+.core.thinking .pulse { animation: pulse 0.6s ease-in-out infinite; background: radial-gradient(circle, #ffd479, #f59e0b 60%, #b45309); }
+.core.speaking .pulse { animation: pulse 0.9s ease-in-out infinite; background: radial-gradient(circle, #b9ffce, #22c55e 60%, #15803d); }
+
+@keyframes breathe { 0%,100%{transform:scale(1);opacity:.9} 50%{transform:scale(1.08);opacity:1} }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.status { color: var(--muted); font-size: 14px; text-align: center; min-height: 20px; }
+
+/* Transcript */
+.transcript {
+  flex: 0 0 auto; max-height: 30vh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 8px 4px; width: 100%;
+}
+.msg { max-width: 85%; padding: 10px 14px; border-radius: 16px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
+.msg.user { align-self: flex-end; background: var(--user); border-bottom-right-radius: 4px; }
+.msg.jarvis { align-self: flex-start; background: var(--jarvis); border-bottom-left-radius: 4px; border: 1px solid rgba(56,189,248,0.2); }
+.msg .who { display: block; font-size: 10px; letter-spacing: 1px; opacity: 0.6; margin-bottom: 2px; }
+
+/* Controls */
+.controls { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 8px; }
+.mic-btn {
+  width: 84px; height: 84px; border-radius: 50%;
+  background: linear-gradient(145deg, #0ea5e9, #0369a1);
+  border: none; box-shadow: 0 8px 24px rgba(14,165,233,0.45);
+  display: grid; place-items: center; font-size: 32px;
+  transition: transform .15s ease;
+}
+.mic-btn:active { transform: scale(0.94); }
+.mic-btn.active { background: linear-gradient(145deg, #f87171, #b91c1c); box-shadow: 0 8px 24px rgba(248,113,113,0.5); }
+.hint { color: var(--muted); font-size: 12px; }
+
+/* Quick action bar (HUD buttons) */
+.quickbar { display: flex; gap: 8px; padding: 6px 4px 10px; overflow-x: auto; justify-content: center; flex-wrap: wrap; }
+.qbtn {
+  background: rgba(56,189,248,0.10); color: var(--accent);
+  border: 1px solid rgba(56,189,248,0.3); border-radius: 18px;
+  padding: 8px 14px; font-size: 13px; font-weight: 600; white-space: nowrap;
+}
+.qbtn:active { background: var(--accent); color: #04121f; }
+
+/* Dynamic content panel (news / youtube / search cards) */
+.panel { display: flex; flex-direction: column; gap: 10px; padding: 4px 4px 12px; width: 100%; }
+.pcard {
+  background: linear-gradient(160deg, #0c1c33, #0a1322);
+  border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; padding: 12px 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+.pcard-title { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 6px; letter-spacing: 0.4px; }
+.pcard-body { font-size: 14px; line-height: 1.5; color: var(--text); word-wrap: break-word; }
+.pcard-body a { color: #7dd3fc; text-decoration: underline; }
+.pcard-body ul { margin: 4px 0; padding-left: 18px; }
+.yt { margin-top: 10px; position: relative; width: 100%; padding-bottom: 56.25%; height: 0; }
+.yt iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; border-radius: 10px; }
+
+/* Secure-context warning banner (voice needs HTTPS) */
+.banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 70;
+  background: linear-gradient(90deg, #b45309, #f59e0b);
+  color: #1a1205; font-size: 12.5px; font-weight: 600; line-height: 1.4;
+  padding: 10px 14px calc(10px + env(safe-area-inset-top)); text-align: center;
+}
+.banner b { color: #3b2400; }
+.banner .x { position: absolute; right: 10px; top: 6px; background: transparent; border: none; font-size: 16px; color: #3b2400; }
+#app.has-banner { padding-top: 46px; }
+
+
+/* Settings page (full screen) */
+.overlay {
+  position: fixed; inset: 0; background: #05070d; z-index: 50;
+  overflow-y: auto; display: flex; flex-direction: column;
+}
+.overlay.hidden { display: none; }
+.page { width: 100%; max-width: 720px; margin: 0 auto; flex: 1; display: flex; flex-direction: column; }
+.page-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 8px calc(16px + env(safe-area-inset-top)); position: sticky; top: 0;
+  background: #05070d; border-bottom: 1px solid rgba(56,189,248,0.15);
+}
+.page-head h2 { margin: 0; font-size: 18px; }
+.page-body { display: flex; flex-direction: column; gap: 14px; padding: 16px 16px calc(28px + env(safe-area-inset-bottom)); }
+.card {
+  background: #0c1424; border: 1px solid rgba(56,189,248,0.18);
+  border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px;
+}
+.card h3 { margin: 0; font-size: 14px; color: var(--accent); letter-spacing: 0.5px; }
+.card label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.card label.row { flex-direction: row; align-items: center; gap: 10px; color: var(--text); font-size: 14px; }
+.card input[type="text"], .card input[type="password"], .select {
+  background: #060b16; border: 1px solid rgba(56,189,248,0.25);
+  color: var(--text); padding: 12px 14px; border-radius: 12px; font-size: 15px; width: 100%;
+}
+.select { appearance: none; -webkit-appearance: none; }
+.secondary {
+  background: rgba(56,189,248,0.12); color: var(--accent);
+  border: 1px solid rgba(56,189,248,0.35); padding: 11px; border-radius: 12px;
+  font-weight: 600; font-size: 13px; width: 100%;
+}
+.primary { background: var(--accent); color: #04121f; border: none; padding: 15px; border-radius: 12px; font-weight: 700; font-size: 15px; }
+.primary.wide { width: 100%; margin-top: 2px; }
+.note { color: var(--muted); font-size: 11px; margin: 0; line-height: 1.4; }
+
+/* In-app (Android WebView) — use the native mic button instead of web mic */
+.inapp #btnMic { display: none; }
+.inapp .core { pointer-events: none; }
+.inapp .hint { color: var(--accent); }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+  background: #11203a; color: var(--text); padding: 10px 16px; border-radius: 20px;
+  font-size: 13px; border: 1px solid rgba(56,189,248,0.3); z-index: 60; opacity: 0;
+  transition: opacity .25s ease; pointer-events: none; max-width: 90%;
+}
+.toast.show { opacity: 1; }
+
+</style>
+</head>
+<body>
+  <div id="app">
+    <!-- Top status bar -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo-dot"></span>
+        <span class="brand-name">JARVIS</span>
+      </div>
+      <div class="top-actions">
+        <button id="btnWake" class="chip" title="Always-listen mode">🎧 Wake: OFF</button>
+        <button id="btnSettings" class="icon-btn" aria-label="Settings">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Central core visualization -->
+    <main class="stage">
+      <div id="core" class="core idle">
+        <div class="ring r1"></div>
+        <div class="ring r2"></div>
+        <div class="ring r3"></div>
+        <div class="pulse"></div>
+        <div class="core-label" id="coreLabel">TAP TO TALK</div>
+      </div>
+      <div id="status" class="status">Tap the core or say “Hey Jarvis”</div>
+    </main>
+
+    <!-- Quick actions (Mark-XLIX style HUD buttons) -->
+    <div class="quickbar">
+      <button class="qbtn" data-act="news">📰 News</button>
+      <button class="qbtn" data-act="youtube">▶️ YouTube</button>
+      <button class="qbtn" data-act="weather">🌤️ Weather</button>
+      <button class="qbtn" data-act="search">🔍 Search</button>
+      <button class="qbtn" data-act="briefing">🌅 Briefing</button>
+      <button class="qbtn" data-act="reminder">⏰ Reminder</button>
+    </div>
+
+    <!-- Conversation transcript -->
+    <section id="transcript" class="transcript" aria-live="polite"></section>
+
+    <!-- Dynamic content panel (news / youtube / search pop-ups) -->
+    <section id="panel" class="panel"></section>
+
+    <!-- Bottom controls -->
+    <footer class="controls">
+      <button id="btnMic" class="mic-btn" aria-label="Talk">
+        <span class="mic-icon">🎙️</span>
+      </button>
+      <div class="hint">Tap 🎙️ to talk · or use the buttons above</div>
+    </footer>
+  </div>
+
+  <!-- Settings page (separate, full screen) -->
+  <div id="settings" class="overlay hidden">
+    <div class="page">
+      <div class="page-head">
+        <button id="btnClose" class="icon-btn" aria-label="Close">✕</button>
+        <h2>⚙️ JARVIS Settings</h2>
+        <span style="width:34px"></span>
+      </div>
+      <div class="page-body">
+
+        <section class="card">
+          <h3>🔑 Gemini API Key</h3>
+          <input id="inpKey" type="password" placeholder="Paste your Google Gemini API key" autocomplete="off" />
+          <button id="btnFetch" class="secondary">🔄 Load latest models</button>
+          <p class="note">Stored only on this device (localStorage). Get a free key at aistudio.google.com/apikey</p>
+        </section>
+
+        <section class="card">
+          <h3>🧠 Chat Model</h3>
+          <select id="inpModel" class="select"></select>
+          <p class="note">Pick any Gemini model — including the newest. Tap “Load latest models” after entering your key to fetch the live list.</p>
+        </section>
+
+        <section class="card">
+          <h3>👤 Profile</h3>
+          <label>Your Name<input id="inpName" type="text" placeholder="e.g. Arjun" /></label>
+          <label>Your City<input id="inpCity" type="text" placeholder="e.g. Vijayawada" /></label>
+          <label>🎤 Speech Language
+            <select id="inpLang" class="select">
+              <option value="te-IN">Telugu (తెలుగు)</option>
+              <option value="en-US">English</option>
+              <option value="hi-IN">Hindi (हिंदी)</option>
+            </select>
+          </label>
+          <label>Wake Word<input id="inpWake" type="text" placeholder="Hey Jarvis" /></label>
+        </section>
+
+        <section class="card">
+          <h3>🔔 Options</h3>
+          <label class="row"><input id="inpAuto" type="checkbox" /> Auto-start listening when app opens</label>
+          <label class="row"><input id="inpSpeak" type="checkbox" checked /> Speak replies out loud</label>
+        </section>
+
+        <button id="btnSave" class="primary wide">💾 Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/* ============================================================
+   JARVIS — Mobile Voice Assistant
+   Runs in any modern mobile browser (Chrome/Edge/Safari).
+   Voice in/out via Web Speech API, brain via Google Gemini REST.
+   ============================================================ */
+
+(() => {
+  'use strict';
+
+  // ---------- Config (stored on device only) ----------
+  const DEFAULTS = {
+    key: '',
+    name: 'Boss',
+    city: 'Vijayawada',
+    wake: 'hey jarvis',
+    model: 'gemini-2.5-flash',
+    lang: 'te-IN',
+    auto: false,
+    speak: true,
+  };
+
+  // Curated fallback list (used until the user fetches the live list with their key)
+  const DEFAULT_MODELS = [
+    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash — fast & default' },
+    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro — smartest' },
+    { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash-Lite — cheapest' },
+    { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' },
+  ];
+  const store = {
+    get() {
+      try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('jarvis') || '{}') }; }
+      catch { return { ...DEFAULTS }; }
+    },
+    set(cfg) { localStorage.setItem('jarvis', JSON.stringify(cfg)); }
+  };
+  let cfg = store.get();
+
+  // ---------- DOM ----------
+  const $ = (s) => document.querySelector(s);
+  const core = $('#core');
+  const coreLabel = $('#coreLabel');
+  const statusEl = $('#status');
+  const transcript = $('#transcript');
+  const btnMic = $('#btnMic');
+  const btnWake = $('#btnWake');
+  const btnSettings = $('#btnSettings');
+  const overlay = $('#settings');
+
+  // ---------- State ----------
+  let history = [];          // conversation for Gemini context
+  let recognizing = false;
+  let wakeMode = false;
+  let armed = false;         // waiting for command after wake word
+
+  // ---------- Persistent memory ----------
+  function getMemory() {
+    try { return JSON.parse(localStorage.getItem('jarvis_memory') || '[]'); }
+    catch { return []; }
+  }
+  function addMemory(fact) {
+    const m = getMemory();
+    if (fact && !m.includes(fact)) { m.push(fact); localStorage.setItem('jarvis_memory', JSON.stringify(m)); }
+  }
+  function memoryText() {
+    const m = getMemory();
+    return m.length ? '\nKnown facts about the user: ' + m.join('; ') + '.' : '';
+  }
+
+  // ---------- Reminders ----------
+  function getReminders() {
+    try { return JSON.parse(localStorage.getItem('jarvis_reminders') || '[]'); }
+    catch { return []; }
+  }
+  function saveReminders(list) { localStorage.setItem('jarvis_reminders', JSON.stringify(list)); }
+  function checkReminders() {
+    const now = new Date();
+    const list = getReminders();
+    let changed = false;
+    list.forEach((r) => {
+      if (!r.done && now >= new Date(r.time)) {
+        r.done = true; changed = true;
+        toast('⏰ Reminder: ' + r.text);
+        speak('Reminder: ' + r.text);
+      }
+    });
+    if (changed) saveReminders(list);
+  }
+  function startReminderChecker() { setInterval(checkReminders, 30000); }
+
+  // ---------- Proactive check-in (after idle) ----------
+  let idleTimer;
+  function resetIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      toast('💡 ' + cfg.name + ', need anything? News, weather, or YouTube?');
+    }, 15 * 60 * 1000);
+  }
+
+  // ---------- System prompt ----------
+  function systemPrompt() {
+    return `You are JARVIS, a personal AI voice assistant running on the user's mobile phone.
+User's name: ${cfg.name}. User's city: ${cfg.city}.
+Be concise, friendly, and natural — you are spoken to and spoken aloud, so keep replies short (1-3 sentences) unless asked for detail.
+Respond in the SAME language the user speaks (e.g. Telugu, Hindi, or English).
+You cannot physically control the phone (no opening apps, no changing settings) — instead, answer, explain, remember, set reminders by telling the user, fetch information, or help plan tasks.
+Capabilities you DO have: answer questions, live web/knowledge info, weather for ${cfg.city}, news headlines, YouTube video suggestions and links, web search with sources, set reminders (state them clearly), translate, calculate, tell jokes, remember user preferences across the chat, and chat naturally. When the user asks for news, YouTube, weather, or a web search, give a concise, well-formatted answer with any useful URLs (full https links).
+Never mention you are "just an AI on a webpage." Stay in character as JARVIS.` + memoryText();
+  }
+
+  // ---------- Toast ----------
+  let toastTimer;
+  function toast(msg) {
+    let t = $('.toast');
+    if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  // ---------- Transcript ----------
+  function addMsg(role, text) {
+    const div = document.createElement('div');
+    div.className = 'msg ' + role;
+    const who = document.createElement('span'); who.className = 'who';
+    who.textContent = role === 'user' ? cfg.name : 'JARVIS';
+    div.appendChild(who);
+    const p = document.createElement('span'); p.textContent = text; div.appendChild(p);
+    transcript.appendChild(div);
+    transcript.scrollTop = transcript.scrollHeight;
+    return div;
+  }
+
+  // ---------- Core visual states ----------
+  function setState(state, label) {
+    core.className = 'core ' + state;
+    if (label) coreLabel.textContent = label;
+  }
+
+  // ---------- Speech synthesis ----------
+  let voicesReady = false;
+  function loadVoices() { if (window.speechSynthesis) { speechSynthesis.getVoices(); voicesReady = true; } }
+  if (window.speechSynthesis) { loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+
+  function speak(text) {
+    if (!cfg.speak || !window.speechSynthesis) return;
+    // strip markdown-ish chars for cleaner TTS
+    const clean = text.replace(/[*_`#]/g, '').trim();
+    if (!clean) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(clean);
+    u.rate = 1.02; u.pitch = 1.0;
+    // try to pick a matching voice for Telugu/English if available
+    const vs = speechSynthesis.getVoices();
+    const pref = vs.find(v => /te-|telugu/i.test(v.lang)) || vs.find(v => /en-/i.test(v.lang));
+    if (pref) u.voice = pref;
+    u.onstart = () => setState('speaking', 'SPEAKING');
+    u.onend = () => { if (!recognizing) setState('idle', wakeMode ? 'LISTENING' : 'TAP TO TALK'); };
+    speechSynthesis.speak(u);
+  }
+
+  // ---------- Gemini ----------
+  async function askGemini(userText) {
+    if (!cfg.key) { toast('⚠️ Add your Gemini API key in Settings'); openSettings(); return null; }
+    setState('thinking', 'THINKING');
+    statusEl.textContent = 'Thinking…';
+    try {
+      const model = cfg.model || 'gemini-2.5-flash';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(cfg.key)}`;
+      const body = {
+        systemInstruction: { parts: [{ text: systemPrompt() }] },
+        contents: [...history, { role: 'user', parts: [{ text: userText }] }].map(m => ({
+          role: m.role, parts: [{ text: m.parts[0].text }]
+        })),
+        generationConfig: { temperature: 0.7, maxOutputTokens: 700 }
+      };
+      const res = await fetch(url, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || ('HTTP ' + res.status));
+      }
+      const data = await res.json();
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      if (!reply) throw new Error('Empty response');
+      history.push({ role: 'user', parts: [{ text: userText }] });
+      history.push({ role: 'model', parts: [{ text: reply }] });
+      if (history.length > 20) history = history.slice(-20);
+      return reply;
+    } catch (e) {
+      console.error(e);
+      toast('Gemini error: ' + e.message);
+      return "I couldn't reach my brain just now. Check your API key and connection.";
+    }
+  }
+
+  async function handleUser(text) {
+    if (!text) return;
+    const lower = text.toLowerCase();
+    if (lower.startsWith('remember ') || lower.startsWith('remember that ')) {
+      const fact = text.replace(/^remember (that )?/i, '').trim();
+      if (fact) {
+        addMemory(fact);
+        addMsg('user', text);
+        addMsg('jarvis', 'Got it, ' + cfg.name + ". I'll remember that.");
+        speak("Got it, I'll remember that.");
+        resetIdle();
+        return;
+      }
+    }
+    addMsg('user', text);
+    const reply = await askGemini(text);
+    if (reply) {
+      addMsg('jarvis', reply);
+      speak(reply);
+    }
+    resetIdle();
+  }
+
+  // ---------- Live model list (uses the user's own API key) ----------
+  function populateModels(list, selected) {
+    const sel = $('#inpModel');
+    if (!sel) return;
+    sel.innerHTML = '';
+    list.forEach((m) => {
+      const o = document.createElement('option');
+      o.value = m.id; o.textContent = m.name;
+      if (m.id === selected) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+
+  async function fetchModels() {
+    if (!cfg.key) { toast('⚠️ Add your Gemini API key first'); openSettings(); return; }
+    toast('🔄 Loading latest models…');
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(cfg.key)}`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const list = (data.models || [])
+        .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent') && /gemini/i.test(m.name))
+        .map((m) => {
+          const id = m.name.replace('models/', '');
+          return { id, name: id };
+        })
+        .sort((a, b) => b.id.localeCompare(a.id)); // newest names tend to sort later
+      if (!list.length) throw new Error('No models returned');
+      // remember current pick
+      const cur = (cfg.model && list.find((m) => m.id === cfg.model)) ? cfg.model : list[0].id;
+      cfg.model = cur; store.set(cfg);
+      populateModels(list, cur);
+      toast('✅ ' + list.length + ' models loaded');
+    } catch (e) {
+      console.error(e);
+      toast('Model fetch failed: ' + e.message);
+    }
+  }
+
+  // ---------- Dynamic content panel (news / youtube / search pop-ups) ----------
+  function linkify(text) {
+    let h = (text || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // YouTube embed
+    const yt = h.match(/https?:\/\/(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/) ||
+               h.match(/https?:\/\/youtu\.be\/([\w-]+)/);
+    let extra = '';
+    if (yt) {
+      const id = yt[1];
+      extra = `<div class="yt"><iframe src="https://www.youtube.com/embed/${id}" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`;
+    }
+    h = h.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    h = h.replace(/\n/g, '<br>');
+    return h + extra;
+  }
+
+  function showPanel(title, bodyHtml) {
+    const panel = document.getElementById('panel');
+    if (!panel) return;
+    const card = document.createElement('div');
+    card.className = 'pcard';
+    card.innerHTML = `<div class="pcard-title">${title}</div><div class="pcard-body">${bodyHtml}</div>`;
+    panel.prepend(card);
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  async function structuredQuery(type, promptText, panelTitle) {
+    if (!cfg.key) { toast('⚠️ Add your Gemini API key first'); openSettings(); return; }
+    setState('thinking', 'THINKING');
+    statusEl.textContent = panelTitle;
+    const reply = await askGemini(promptText);
+    if (reply) {
+      addMsg('jarvis', reply);
+      showPanel(panelTitle, linkify(reply));
+      speak(reply);
+    }
+  }
+
+  function quickAction(type) {
+    resetIdle();
+    if (type === 'news') {
+      structuredQuery('news',
+        'Give me the top 8 latest news headlines from today. For EACH headline, write it FIRST in Telugu (తెలుగు), then the same in English inside brackets. Add a one-line description in Telugu. Keep it concise and natural.',
+        '📰 తెలుగు న్యూస్ / Telugu News');
+    } else if (type === 'weather') {
+      structuredQuery('weather',
+        `What is the current weather and today's forecast for ${cfg.city}? Give a short, friendly summary.`,
+        '🌤️ Weather — ' + cfg.city);
+    } else if (type === 'youtube') {
+      const q = prompt('YouTube — what do you want to watch or search?');
+      if (!q) return;
+      structuredQuery('youtube',
+        `Find the top 5 YouTube videos about: ${q}. For each, give the exact full YouTube URL (https://www.youtube.com/watch?v=...) and a one-line description.`,
+        '▶️ YouTube: ' + q);
+    } else if (type === 'search') {
+      const q = prompt('Search the web for:');
+      if (!q) return;
+      structuredQuery('search',
+        `Search the web for: ${q}. Give a concise answer, then list up to 3 useful source URLs.`,
+        '🔍 ' + q);
+    } else if (type === 'briefing') {
+      const hr = new Date().getHours();
+      const greet = hr < 12 ? 'Good morning' : (hr < 17 ? 'Good afternoon' : 'Good evening');
+      structuredQuery('briefing',
+        `${greet} ${cfg.name}. Respond mainly in Telugu (తెలుగు), with English in brackets if helpful. Give a short, friendly briefing: the current time, today's weather for ${cfg.city}, and the top 3 news headlines. Keep it brief and spoken naturally.`,
+        '🌅 Morning Briefing');
+    } else if (type === 'reminder') {
+      const text = prompt('Remind me to:');
+      if (!text) return;
+      const time = prompt('At what time? (HH:MM, 24-hour):');
+      if (!time) return;
+      const [hh, mm] = time.split(':').map(Number);
+      if (isNaN(hh) || isNaN(mm)) { toast('Invalid time'); return; }
+      const dt = new Date();
+      dt.setHours(hh, mm, 0, 0);
+      if (dt < new Date()) dt.setDate(dt.getDate() + 1);
+      const list = getReminders();
+      list.push({ text, time: dt.toISOString(), done: false });
+      saveReminders(list);
+      toast('⏰ Reminder set for ' + time);
+      speak('Reminder set for ' + time);
+    }
+  }
+
+  // ---------- Speech Recognition ----------
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null;
+  let recSupported = !!SR;
+
+  function buildRec() {
+    if (!recSupported) return null;
+    const r = new SR();
+    r.lang = cfg.lang || 'en-US';
+    r.interimResults = true;
+    r.continuous = false;
+    r.maxAlternatives = 1;
+    r.onresult = onResult;
+    r.onerror = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        toast('🎙️ Microphone permission denied'); stopAll();
+      } else if (e.error === 'network') {
+        toast('🎙️ Voice service unavailable — needs HTTPS + internet');
+      } else if (e.error === 'no-speech') { /* ignore */ }
+    };
+    r.onend = () => {
+      recognizing = false;
+      if (wakeMode) { setTimeout(() => { if (wakeMode && !recognizing) startRec(); }, 250); }
+      else if (!window.speechSynthesis || !speechSynthesis.speaking) {
+        setState('idle', 'TAP TO TALK');
+      }
+    };
+    return r;
+  }
+
+  function onResult(ev) {
+    let interim = '';
+    let finalTxt = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      const t = ev.results[i][0].transcript;
+      if (ev.results[i].isFinal) finalTxt += t; else interim += t;
+    }
+    if (interim) statusEl.textContent = interim;
+    if (finalTxt) {
+      const txt = finalTxt.trim();
+      if (wakeMode) {
+        const w = cfg.wake.toLowerCase();
+        const low = txt.toLowerCase();
+        const idx = low.indexOf(w);
+        if (idx >= 0) {
+          const cmd = txt.slice(idx + w.length).trim();
+          if (cmd) handleUser(cmd);
+          else { armed = true; statusEl.textContent = 'Yes ' + cfg.name + '?'; }
+        } else if (armed) {
+          armed = false; handleUser(txt);
+        }
+        // if neither wake nor armed, just keep listening (idle chatter ignored)
+      } else {
+        handleUser(txt);
+      }
+    }
+  }
+
+  function startRec() {
+    if (!recSupported) { fallbackText(); return; }
+    if (!window.isSecureContext) {
+      toast('🎙️ Voice needs HTTPS — host on GitHub Pages or install the APK');
+      statusEl.textContent = 'Voice needs HTTPS (see banner)';
+      return;
+    }
+    if (!rec) rec = buildRec();
+    try {
+      rec.start();
+      recognizing = true;
+      setState('listening', 'LISTENING');
+      statusEl.textContent = wakeMode ? ('Say “' + cfg.wake + '”…') : 'Listening…';
+      btnMic.classList.add('active');
+    } catch (e) {
+      if (e && e.name === 'InvalidStateError') return; // already running
+      toast('🎙️ Could not start voice: ' + (e && e.message ? e.message : 'unknown'));
+      statusEl.textContent = 'Voice unavailable — host on HTTPS or use APK';
+    }
+  }
+
+  function stopRec() {
+    if (rec && recognizing) { try { rec.stop(); } catch {} }
+    recognizing = false;
+    btnMic.classList.remove('active');
+  }
+
+  function stopAll() {
+    wakeMode = false; armed = false;
+    stopRec();
+    btnWake.classList.remove('on'); btnWake.textContent = '🎧 Wake: OFF';
+    setState('idle', 'TAP TO TALK');
+    statusEl.textContent = 'Tap the core or say “Hey Jarvis”';
+  }
+
+  // Text fallback when speech recognition is unavailable
+  function fallbackText() {
+    const t = prompt('Type your command (voice not supported on this browser):');
+    if (t) handleUser(t);
+  }
+
+  // ---------- Events ----------
+  btnMic.addEventListener('click', () => {
+    if (recognizing && !wakeMode) { stopRec(); return; }
+    if (wakeMode) { stopAll(); return; }
+    startRec();
+  });
+
+  core.addEventListener('click', () => { if (!wakeMode) startRec(); });
+
+  btnWake.addEventListener('click', () => {
+    if (!recSupported) { toast('Voice not supported here — use the app via Chrome'); return; }
+    if (wakeMode) { stopAll(); return; }
+    if (!cfg.key) { toast('Add API key first (⚙️)'); openSettings(); return; }
+    wakeMode = true; armed = false;
+    btnWake.classList.add('on'); btnWake.textContent = '🎧 Wake: ON';
+    startRec();
+  });
+
+  // Quick action buttons (News / YouTube / Weather / Search)
+  document.querySelectorAll('.qbtn').forEach((b) => {
+    b.addEventListener('click', () => quickAction(b.dataset.act));
+  });
+
+  // ---------- Settings ----------
+  function openSettings() {
+    $('#inpKey').value = cfg.key || '';
+    $('#inpName').value = cfg.name || '';
+    $('#inpCity').value = cfg.city || '';
+    $('#inpWake').value = cfg.wake || 'hey jarvis';
+    $('#inpAuto').checked = !!cfg.auto;
+    $('#inpSpeak').checked = cfg.speak !== false;
+    // populate model dropdown (live list if available, else curated defaults)
+    const sel = $('#inpModel');
+    if (sel && sel.options.length === 0) populateModels(DEFAULT_MODELS, cfg.model);
+    else if (sel) sel.value = cfg.model;
+    const langSel = $('#inpLang');
+    if (langSel) langSel.value = cfg.lang || 'te-IN';
+    overlay.classList.remove('hidden');
+  }
+  function closeSettings() { overlay.classList.add('hidden'); }
+
+  btnSettings.addEventListener('click', openSettings);
+  $('#btnClose').addEventListener('click', closeSettings);
+  $('#btnFetch').addEventListener('click', fetchModels);
+  $('#btnSave').addEventListener('click', () => {
+    cfg = {
+      key: $('#inpKey').value.trim(),
+      name: $('#inpName').value.trim() || 'Boss',
+      city: $('#inpCity').value.trim() || 'Vijayawada',
+      wake: ($('#inpWake').value.trim() || 'hey jarvis').toLowerCase(),
+      model: $('#inpModel').value || 'gemini-2.5-flash',
+      lang: $('#inpLang').value || 'te-IN',
+      auto: $('#inpAuto').checked,
+      speak: $('#inpSpeak').checked,
+    };
+    store.set(cfg);
+    closeSettings();
+    toast('✅ Saved');
+    if (!cfg.key) toast('Add your Gemini API key to start talking');
+  });
+
+  // ---------- PWA service worker ----------
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+
+  // ---------- Native bridge (used when wrapped in the Android APK) ----------
+  // The Android app can call window.JARVIS.inject(text) and window.AndroidBridge.speak(text)
+  window.JARVIS = { inject: (t) => handleUser(t) };
+  const hasNative = !!(window.AndroidBridge);
+  if (hasNative) {
+    document.body.classList.add('inapp');
+    const hintEl = document.querySelector('.hint');
+    if (hintEl) hintEl.textContent = 'Tap the 🎤 button above to talk · replies by voice';
+    const _speak = speak;
+    speak = function (text) {
+      if (window.AndroidBridge && typeof window.AndroidBridge.speak === 'function') {
+        window.AndroidBridge.speak(text);
+      } else { _speak(text); }
+    };
+  }
+
+  // ---------- Boot ----------
+  function showSecureBanner() {
+    if (window.isSecureContext) return;
+    document.body.classList.add('has-banner');
+    const b = document.createElement('div');
+    b.className = 'banner';
+    b.innerHTML = '⚠️ <b>Voice needs HTTPS.</b> Host this file on GitHub Pages (1 step) or install the APK — then mic &amp; "Hey Jarvis" work. Text chat works now.';
+    const x = document.createElement('button'); x.className = 'x'; x.textContent = '✕'; x.onclick = () => b.remove();
+    b.appendChild(x);
+    document.body.appendChild(b);
+  }
+
+  function boot() {
+    startReminderChecker();
+    resetIdle();
+    showSecureBanner();
+    if (!recSupported) {
+      statusEl.textContent = 'Voice not supported — tap mic to type';
+    }
+    if (!cfg.key) {
+      toast('👋 Welcome! Enter your Gemini API key to begin');
+      setTimeout(openSettings, 500);
+    } else {
+      toast('👋 Online, ' + cfg.name + '. Tap a button or 🎙️ to talk.');
+      if (cfg.auto) {
+        setTimeout(() => { if (recSupported) { wakeMode = true; btnWake.classList.add('on'); btnWake.textContent = '🎧 Wake: ON'; startRec(); } }, 600);
+      }
+    }
+  }
+  boot();
+})();
+
+</script>
+</body>
+</html>
