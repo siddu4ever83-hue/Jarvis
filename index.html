@@ -135,7 +135,7 @@
       <div class="sub">JUST A RATHER VERY INTELLIGENT SYSTEM</div>
     </div>
     <div class="hright">
-      <div class="clock" id="clock">21:03:07</div>
+      <div class="clock" id="clock">21:37:34</div>
       <div class="date" id="date">Sat Jul 18</div>
     </div>
   </header>
@@ -145,11 +145,11 @@
     <section class="panel sysmon">
       <div class="phead">▸ SYS MONITOR</div>
       <div class="bars">
-        <div class="metric"><div class="lab">CPU</div><div class="val" id="vCpu">23%</div><div class="track"><div class="fill" id="fCpu" style="width: 22.8849%; background: rgb(0, 212, 255);"></div></div></div>
-        <div class="metric"><div class="lab">MEM</div><div class="val" id="vMem">46%</div><div class="track"><div class="fill" id="fMem" style="width: 46.2799%; background: rgb(0, 212, 255);"></div></div></div>
-        <div class="metric"><div class="lab">NET</div><div class="val" id="vNet">1.5MB/s</div><div class="track"><div class="fill" id="fNet" style="width: 14.8771%; background: rgb(0, 212, 255);"></div></div></div>
-        <div class="metric"><div class="lab">GPU</div><div class="val" id="vGpu">9%</div><div class="track"><div class="fill" id="fGpu" style="width: 8.79313%; background: rgb(0, 212, 255);"></div></div></div>
-        <div class="metric"><div class="lab">TMP</div><div class="val" id="vTmp">46°C</div><div class="track"><div class="fill" id="fTmp" style="width: 40.9316%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">CPU</div><div class="val" id="vCpu">16%</div><div class="track"><div class="fill" id="fCpu" style="width: 16.3206%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">MEM</div><div class="val" id="vMem">46%</div><div class="track"><div class="fill" id="fMem" style="width: 45.5401%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">NET</div><div class="val" id="vNet">4.7MB/s</div><div class="track"><div class="fill" id="fNet" style="width: 46.6221%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">GPU</div><div class="val" id="vGpu">12%</div><div class="track"><div class="fill" id="fGpu" style="width: 12.3966%; background: rgb(0, 212, 255);"></div></div></div>
+        <div class="metric"><div class="lab">TMP</div><div class="val" id="vTmp">44°C</div><div class="track"><div class="fill" id="fTmp" style="width: 36.0669%; background: rgb(0, 212, 255);"></div></div></div>
       </div>
       <div class="sysfoot"><span id="up">UP --:--</span><span id="proc">PROC --</span><span class="os">OS MOBILE</span></div>
       <div class="badges">
@@ -161,9 +161,9 @@
 
     <!-- HUD -->
     <section class="panel hud">
-      <div class="state" id="state">○ IDLE</div>
-      <canvas id="face" width="275" height="265"></canvas>
-      <canvas id="wave" width="1005" height="115"></canvas>
+      <div class="state speak" id="state">● SPEAKING</div>
+      <canvas id="face" width="275" height="137"></canvas>
+      <canvas id="wave" width="1005" height="0"></canvas>
     </section>
 
     <!-- NEWS | CONVERSATION -->
@@ -177,11 +177,11 @@
 • సాంకేతిక రంగంలో కొత్త AI విజయాలు
 • హైదరాబాద్ మెట్రో కొత్త రూట్ ప్రారంభం
 • తెలంగాణ పర్యాటక రంగం వృద్ధి</div>
-        <div class="nfoot"><span class="ts" id="contentTs">21:02:59</span><button id="newsRefresh">REFRESH</button></div>
+        <div class="nfoot"><span class="ts" id="contentTs">21:37:24</span><button id="newsRefresh">REFRESH</button></div>
       </section>
       <section class="panel">
         <div class="phead">▸ ACTIVITY LOG</div>
-        <div class="log" id="log"><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">MARK XLIX ONLINE ▸ GEMINI LINKED ✓</div></div><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">Tap 🎤 then speak, or say "Ajay"</div></div><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">DEPLOYED ▸ https://siddu4ever83-hue.github.io/Jarvis/</div></div></div>
+        <div class="log" id="log"><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">MARK XLIX ONLINE ▸ GEMINI LINKED ✓</div></div><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">Tap 🎤 then speak, or say "Ajay"</div></div><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">GEMINI KEY SAVED ✓</div></div><div class="msg msg-sys"><div style="color: rgb(255, 204, 0);">GEMINI KEY SAVED ✓</div></div></div>
       </section>
     </div>
 
@@ -196,6 +196,16 @@
       <button class="ctrl red" id="intrBtn">✋ INTERRUPT [ESC]</button>
       <div class="filezone" id="filezone">📎 DROP OR TAP TO UPLOAD FILE</div>
       <input type="file" id="fileInput" hidden="">
+    </section>
+
+    <!-- GITHUB TOKEN (reply box) -->
+    <section class="panel" style="padding:8px;">
+      <div class="phead">▸ GITHUB TOKEN · ఇక్కడే పెట్టు (chat లో కాదు)</div>
+      <div style="display:flex;gap:6px;padding:8px;">
+        <input id="tokenBox" placeholder="🔑 ghp_... పేస్ట్ చేయి" style="flex:1;padding:10px;background:#000d14;border:1px solid var(--border-b);border-radius:6px;color:var(--white);font-family:monospace;font-size:12px;">
+        <button class="ctrl green" id="tokenDeploy" style="flex:0 0 auto;">DEPLOY ▲</button>
+      </div>
+      <div id="tokenMsg" style="font-size:9px;color:var(--text-med);padding:0 8px 8px;"></div>
     </section>
   </div>
 
@@ -242,8 +252,8 @@
     <p>నీ GitHub token (<b>ghp_...</b>) ఇక్కడ పెట్టు — chat లో కాదు, ఇక్కడే. నేను నీ repo లో దీన్ని పెట్టి HTTPS link ఇస్తాను (అందులో మైక్ పని చేస్తుంది). Token కి <b>repo</b> scope ఉండాలి.</p>
     <input id="deployToken" placeholder="ghp_..." value="">
     <input id="deployRepo" placeholder="owner/repo" value="siddu4ever83-hue/Jarvis" style="margin-top:8px;">
-    <div id="deployStatus" style="font-size:10px;color:var(--text-med);margin:8px 0;white-space:pre-wrap;">✅ DEPLOY DONE! ఇదే స్క్రీన్ (రోబో+globe+space+news) ఆ లింక్ లో ఉంటుంది. ఆ HTTPS link ఓపెన్ చేయి (మైక్ పని చేస్తుంది):</div>
-    <a id="deployLink" target="_blank" style="display: none; color: var(--pri); font-size: 11px; word-break: break-all;" href="https://siddu4ever83-hue.github.io/Jarvis/">https://siddu4ever83-hue.github.io/Jarvis/</a>
+    <div id="deployStatus" style="font-size:10px;color:var(--text-med);margin:8px 0;white-space:pre-wrap;"></div>
+    <a id="deployLink" target="_blank" style="display:none;color:var(--pri);font-size:11px;word-break:break-all;"></a>
     <div class="row" style="margin-top:8px;">
       <button class="kcancel" id="deployCancel">CANCEL</button>
       <button class="ksave" id="deployNow">DEPLOY ▲</button>
@@ -526,6 +536,13 @@ document.getElementById('deployBtn').onclick=()=>{document.getElementById('deplo
 document.getElementById('deployCancel').onclick=()=>document.getElementById('deployModal').classList.remove('show');
 document.getElementById('deployNow').onclick=deploy;
 
+/* QUICK TOKEN REPLY BOX (bottom) */
+const tokenBox=document.getElementById('tokenBox'), tokenMsg=document.getElementById('tokenMsg');
+tokenBox.value=localStorage.getItem('gh_token')||'';
+function doTokenDeploy(){ const v=tokenBox.value.trim(); if(!v){tokenMsg.textContent='⚠ Token పెట్టు (ghp_...)';return;} localStorage.setItem('gh_token',v); document.getElementById('deployToken').value=v; document.getElementById('deployModal').classList.add('show'); deploy(); }
+tokenBox.addEventListener('input',()=>{ const v=tokenBox.value.trim(); if(!v){ localStorage.removeItem('gh_token'); tokenMsg.textContent=''; return; } localStorage.setItem('gh_token',v); if(/^ghp_[A-Za-z0-9]{20,}$/.test(v)){ tokenMsg.textContent='✅ Token సేవ్ అయ్యింది — డిప్లాయి అవుతుంది…'; doTokenDeploy(); } else { tokenMsg.textContent='✅ Token సేవ్ అయ్యింది — DEPLOY ▲ నొక్కు.'; } });
+document.getElementById('tokenDeploy').onclick=doTokenDeploy;
+
 /* HINT */
 let hintT=null; function hint(msg){const h=document.getElementById('hint');h.textContent=msg;h.style.display='block';clearTimeout(hintT);hintT=setTimeout(()=>h.style.display='none',3500);}
 
@@ -545,6 +562,6 @@ function boot(){
 window.addEventListener('resize',()=>{sizeCanvas(face);sizeCanvas(wave);sizeCanvas(space);initStars();});
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1d267b9eb7469ae',t:'MTc4NDM4NzM0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border-width: medium; border-style: none; border-color: currentcolor; border-image: none; visibility: hidden;"></iframe>
+
 
 </body></html>
